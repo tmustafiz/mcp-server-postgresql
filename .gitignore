@@ -1,0 +1,24 @@
+# Node modules
+node_modules/
+
+# Build output
+dist/
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.*
+
+# OS-specific files
+.DS_Store
+
+# Optional npm cache directory
+.npm
+
+# Optional coverage directory
+coverage/
+
+# TypeScript cache
+*.tsbuildinfo 
