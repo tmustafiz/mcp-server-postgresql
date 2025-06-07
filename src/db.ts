@@ -10,6 +10,9 @@ export const pool = new Pool({
   user: config.pgUser,
   password: config.pgPassword,
   database: config.pgDatabase,
+  ssl: config.pgSsl ? {
+    rejectUnauthorized: config.pgSslRejectUnauthorized
+  } : undefined
 });
 
 /**

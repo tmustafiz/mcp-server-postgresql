@@ -8,6 +8,8 @@ export interface Config {
   pgPassword: string;
   pgDatabase: string;
   serverPort: number;
+  pgSsl: boolean;
+  pgSslRejectUnauthorized: boolean;
 }
 
 export const config: Config = {
@@ -17,4 +19,6 @@ export const config: Config = {
   pgPassword: process.env.PGPASSWORD || '',
   pgDatabase: process.env.PGDATABASE || 'postgres',
   serverPort: Number(process.env.PORT) || 8080,
+  pgSsl: process.env.PGSSL === 'true',
+  pgSslRejectUnauthorized: process.env.PGSSL_REJECT_UNAUTHORIZED !== 'false'
 };

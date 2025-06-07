@@ -9,6 +9,7 @@ A production-grade, extensible Model Context Protocol (MCP) server for PostgreSQ
 - **Transports**: Supports both HTTP (Streamable HTTP) and STDIO
 - **TypeScript**: Fully typed, strict, and documented
 - **.env Config**: Uses `dotenv` for configuration
+- **SSL Support**: Configurable SSL connection to PostgreSQL
 
 ## Tools Exposed
 - `list_tables`: List all tables in a schema
@@ -34,11 +35,18 @@ A production-grade, extensible Model Context Protocol (MCP) server for PostgreSQ
    ```
 3. **Create a `.env` file** in the project root:
    ```ini
+   # PostgreSQL Connection
    PGHOST=localhost
    PGPORT=5432
    PGUSER=postgres
    PGPASSWORD=yourpassword
    PGDATABASE=mydb
+   
+   # SSL Configuration (optional)
+   PGSSL=true                    # Enable SSL connection
+   PGSSL_REJECT_UNAUTHORIZED=true # Reject unauthorized SSL certificates
+   
+   # Server Configuration
    PORT=8080
    ```
 

@@ -1,22 +1,32 @@
-import { z } from "zod";
+import { ToolCallback } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { query } from '../db.js';
+import { z } from "zod";
+import { pool } from "../db.js";
 
-/**
- * Return sample (distinct) data values from a specified column for data inspection and type inference.
- */
-export async function sampleColumnData(schema: string, table: string, column: string, limit = 10): Promise<any[]> {
-  // TODO: Implement
-  return [];
-}
+const sampleColumnDataHandler: ToolCallback<{ schema: z.ZodString; table: z.ZodString; column: z.ZodString; limit?: z.ZodNumber }> = async (args, extra) => {
+  const client = await pool.connect();
+  try {
+    const res = await client.query(
+      `SELECT DISTINCT "${args.column}" FROM "${args.schema}"."${args.table}" LIMIT $1`,
+      [args.limit ?? 5]
+    );
+    return { content: [{ type: "text", text: JSON.stringify({ values: res.rows.map(row => row[args.column]) }) }] };
+  } finally {
+    client.release();
+  }
+};
 
 export function register(server: McpServer) {
-  server.tool(
-    "sample_column_data",
-    { schema: z.string(), table: z.string(), column: z.string(), limit: z.number().optional() },
-    async ({ schema, table, column, limit }) => {
-      // TODO: Implement
-      return { content: [{ type: "text", text: JSON.stringify([]) }] };
+  server.registerTool("sample_column_data", {
+    description: "Get sample data values from a column for data inspection.",
+    inputSchema: {
+      schema: z.string(),
+      table: z.string(),
+      column: z.string(),
+      limit: z.number().optional()
+    },
+    outputSchema: {
+      values: z.array(z.any())
     }
-  );
+  }, sampleColumnDataHandler);
 }

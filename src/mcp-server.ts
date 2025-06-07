@@ -27,6 +27,7 @@ import * as schemaTools from './tools/schema.js';
 import * as erdTools from './tools/erd.js';
 import * as fuzzyTools from './tools/fuzzy.js';
 import * as sampleTools from './tools/sample.js';
+import * as relationshipTools from './tools/relationships.js';
 
 const server = new McpServer({
   name: "PostgreSQL MCP Server",
@@ -38,22 +39,50 @@ schemaTools.register(server);
 erdTools.register(server);
 fuzzyTools.register(server);
 sampleTools.register(server);
+relationshipTools.register(server);
+
+let httpTransport: StreamableHTTPServerTransport | null = null;
 
 async function start() {
   if (process.argv.includes("--stdio")) {
     const transport = new StdioServerTransport();
     await server.connect(transport);
     console.log("MCP server running on STDIO");
+
+    // Handle cleanup on process termination
+    process.on('SIGINT', async () => {
+      console.log('Shutting down...');
+      await server.close();
+      process.exit(0);
+    });
   } else {
     const app = express();
     app.use(express.json());
+
+    // Create HTTP transport once
+    httpTransport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+    await server.connect(httpTransport);
+
     app.post("/mcp", async (req, res) => {
-      const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
-      await server.connect(transport);
-      await transport.handleRequest(req, res, req.body);
+      if (!httpTransport) {
+        res.status(500).json({ error: "Server not properly initialized" });
+        return;
+      }
+      await httpTransport.handleRequest(req, res, req.body);
     });
-    app.listen(config.serverPort, () => {
+
+    const httpServer = app.listen(config.serverPort, () => {
       console.log(`MCP server running on port ${config.serverPort}`);
+    });
+
+    // Handle cleanup on process termination
+    process.on('SIGINT', async () => {
+      console.log('Shutting down...');
+      await new Promise<void>((resolve) => {
+        httpServer.close(() => resolve());
+      });
+      await server.close();
+      process.exit(0);
     });
   }
 }
