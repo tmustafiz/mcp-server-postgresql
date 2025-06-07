@@ -1,20 +1,41 @@
 {
   "name": "mcp-server-postgresql",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.1",
   "description": "PostgreSQL MCP Server for LLM coding agents",
   "main": "dist/mcp-server.js",
   "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/mcp-server.js",
+      "types": "./dist/mcp-server.d.ts"
+    },
+    "./tools": {
+      "import": "./dist/tools/index.js",
+      "types": "./dist/tools/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "start": "node dist/mcp-server.js",
     "dev": "tsx src/mcp-server.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "release:beta": "npm version prerelease --preid=beta && npm publish --tag beta",
+    "release:patch": "npm version patch && npm publish",
+    "release:minor": "npm version minor && npm publish",
+    "release:major": "npm version major && npm publish"
   },
   "keywords": [
     "mcp",
     "postgresql",
     "llm",
-    "database"
+    "database",
+    "ssl"
   ],
   "author": "",
   "license": "MIT",
@@ -31,5 +52,11 @@
     "@types/string-similarity": "^4.0.2",
     "tsx": "^4.16.0",
     "typescript": "^5.5.0"
+  },
+  "peerDependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

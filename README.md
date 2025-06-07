@@ -10,8 +10,75 @@ A production-grade, extensible Model Context Protocol (MCP) server for PostgreSQ
 - **TypeScript**: Fully typed, strict, and documented
 - **.env Config**: Uses `dotenv` for configuration
 - **SSL Support**: Configurable SSL connection to PostgreSQL
+- **Extensible**: Easy to add custom tools and extend functionality
 
-## Tools Exposed
+## Installation
+```bash
+npm install mcp-server-postgresql
+```
+
+## Usage
+```typescript
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { registerAllTools } from "mcp-server-postgresql/tools";
+
+const server = new McpServer({
+  name: "My MCP Server",
+  version: "1.0.0"
+});
+
+// Register all built-in tools
+registerAllTools(server);
+
+// Start the server
+server.start();
+```
+
+## Extending with Custom Tools
+You can create your own tools by implementing the `ToolModule` interface:
+
+```typescript
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { ToolCallback } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
+
+// Define your tool handler
+const myCustomToolHandler: ToolCallback<{ param1: z.ZodString }> = async (args, extra) => {
+  // Your tool implementation
+  return { content: [{ type: "text", text: "Result" }] };
+};
+
+// Create a tool module
+export function register(server: McpServer) {
+  server.registerTool("my_custom_tool", {
+    description: "Description of my custom tool",
+    inputSchema: {
+      param1: z.string()
+    },
+    outputSchema: {
+      result: z.string()
+    }
+  }, myCustomToolHandler);
+}
+
+// Use in your server
+import { register as registerCustomTool } from "./my-custom-tool.js";
+
+const server = new McpServer({
+  name: "My MCP Server",
+  version: "1.0.0"
+});
+
+// Register built-in tools
+registerAllTools(server);
+
+// Register your custom tool
+registerCustomTool(server);
+
+server.start();
+```
+
+## Built-in Tools
 - `list_tables`: List all tables in a schema
 - `list_columns`: List all columns for a table (with comments)
 - `find_related_tables`: Show direct FK relationships for a table
@@ -21,92 +88,38 @@ A production-grade, extensible Model Context Protocol (MCP) server for PostgreSQ
 - `fuzzy_column_match`: Fuzzy match a column by natural language phrase
 - `sample_column_data`: Return sample data from a column
 
-## Architecture
-- `src/mcp-server.ts`: Main entry, registers all tools, starts server
-- `src/config.ts`: Loads config from `.env`
-- `src/db.ts`: PostgreSQL connection pool
-- `src/tools/`: Tool modules (schema, erd, fuzzy, sample)
+## Configuration
+Create a `.env` file in your project root:
+```ini
+# PostgreSQL Connection
+PGHOST=localhost
+PGPORT=5432
+PGUSER=postgres
+PGPASSWORD=yourpassword
+PGDATABASE=mydb
 
-## Setup
+# SSL Configuration (optional)
+PGSSL=true                    # Enable SSL connection
+PGSSL_REJECT_UNAUTHORIZED=true # Reject unauthorized SSL certificates
+
+# Server Configuration
+PORT=8080
+```
+
+## Development
 1. **Clone the repo**
 2. **Install dependencies**
    ```sh
    npm install
    ```
-3. **Create a `.env` file** in the project root:
-   ```ini
-   # PostgreSQL Connection
-   PGHOST=localhost
-   PGPORT=5432
-   PGUSER=postgres
-   PGPASSWORD=yourpassword
-   PGDATABASE=mydb
-   
-   # SSL Configuration (optional)
-   PGSSL=true                    # Enable SSL connection
-   PGSSL_REJECT_UNAUTHORIZED=true # Reject unauthorized SSL certificates
-   
-   # Server Configuration
-   PORT=8080
+3. **Build**
+   ```sh
+   npm run build
    ```
-
-## Build & Run
-- **Build:**
-  ```sh
-  npm run build
-  ```
-- **Run (HTTP):**
-  ```sh
-  npm start
-  # MCP server on http://localhost:8080/mcp
-  ```
-- **Run (STDIO):**
-  ```sh
-  node dist/mcp-server.js --stdio
-  ```
-- **Dev mode (hot reload):**
-  ```sh
-  npm run dev
-  ```
-
-## Tool API (Example)
-All tools are exposed via MCP protocol. For HTTP, POST to `/mcp` with a JSON-RPC 2.0 request.
-
-### Example: List Tables
-```sh
-curl -X POST http://localhost:8080/mcp \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "jsonrpc": "2.0",
-    "id": 1,
-    "method": "callTool",
-    "params": {
-      "name": "list_tables",
-      "arguments": { "schema": "public" }
-    }
-  }'
-```
-
-### Example Response
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "result": {
-    "content": [
-      { "type": "text", "text": "[\"users\",\"orders\"]" }
-    ]
-  }
-}
-```
-
-## Testing
-- Use `curl`, Postman, or the [MCP Inspector](https://github.com/modelcontextprotocol/inspector)
-- For STDIO, use an MCP-compatible client or pipe JSON-RPC requests to stdin
-
-## Extending
-- Add new tools in `src/tools/` and register them in `src/mcp-server.ts`
-- Each tool module exports a `register(server: McpServer)` function
+4. **Run**
+   ```sh
+   npm start
+   ```
 
 ## License
 MIT 

@@ -22,29 +22,19 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import express from "express";
 import { config } from "./config.js";
-import './db.js';
-import * as schemaTools from './tools/schema.js';
-import * as erdTools from './tools/erd.js';
-import * as fuzzyTools from './tools/fuzzy.js';
-import * as sampleTools from './tools/sample.js';
-import * as relationshipTools from './tools/relationships.js';
+import { registerAllTools } from "./tools/index.js";
 
 const server = new McpServer({
   name: "PostgreSQL MCP Server",
   version: "1.0.0"
 });
 
-// Register all tools
-schemaTools.register(server);
-erdTools.register(server);
-fuzzyTools.register(server);
-sampleTools.register(server);
-relationshipTools.register(server);
-
-let httpTransport: StreamableHTTPServerTransport | null = null;
+// Register all built-in tools
+registerAllTools(server);
 
 async function start() {
   if (process.argv.includes("--stdio")) {
+    // Use STDIO transport
     const transport = new StdioServerTransport();
     await server.connect(transport);
     console.log("MCP server running on STDIO");
@@ -56,18 +46,14 @@ async function start() {
       process.exit(0);
     });
   } else {
+    // Use HTTP transport
     const app = express();
     app.use(express.json());
 
-    // Create HTTP transport once
-    httpTransport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+    const httpTransport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
     await server.connect(httpTransport);
 
     app.post("/mcp", async (req, res) => {
-      if (!httpTransport) {
-        res.status(500).json({ error: "Server not properly initialized" });
-        return;
-      }
       await httpTransport.handleRequest(req, res, req.body);
     });
 
