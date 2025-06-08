@@ -11,6 +11,7 @@ A production-grade, extensible Model Context Protocol (MCP) server for PostgreSQ
 - **.env Config**: Uses `dotenv` for configuration
 - **SSL Support**: Configurable SSL connection to PostgreSQL
 - **Extensible**: Easy to add custom tools and extend functionality
+- **Query Safety**: Built-in protection against resource-intensive queries
 
 ## Installation
 ```bash
@@ -87,6 +88,12 @@ server.start();
 - `generate_erd_json`: Generate a JSON graph of schema structure
 - `fuzzy_column_match`: Fuzzy match a column by natural language phrase
 - `sample_column_data`: Return sample data from a column
+- `run_query`: Execute SELECT queries with safety measures:
+  - Query complexity analysis
+  - Rate limiting
+  - Result size limiting
+  - Query timeout protection
+  - Structured responses
 
 ## Configuration
 Create a `.env` file in your project root:
