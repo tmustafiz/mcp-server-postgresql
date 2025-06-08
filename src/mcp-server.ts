@@ -53,12 +53,19 @@ async function start() {
     const httpTransport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
     await server.connect(httpTransport);
 
-    app.post("/mcp", async (req, res) => {
+    // Handle both root path and /mcp for compatibility
+    const handleMcpRequest = async (req: express.Request, res: express.Response) => {
       await httpTransport.handleRequest(req, res, req.body);
-    });
+    };
+
+    app.post("/", handleMcpRequest);
+    app.post("/mcp", handleMcpRequest);
 
     const httpServer = app.listen(config.serverPort, () => {
       console.log(`MCP server running on port ${config.serverPort}`);
+      console.log(`Available endpoints:`);
+      console.log(`  - POST http://localhost:${config.serverPort}/`);
+      console.log(`  - POST http://localhost:${config.serverPort}/mcp`);
     });
 
     // Handle cleanup on process termination

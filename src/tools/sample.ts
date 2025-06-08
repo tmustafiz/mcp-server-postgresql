@@ -10,7 +10,14 @@ const sampleColumnDataHandler: ToolCallback<{ schema: z.ZodString; table: z.ZodS
       `SELECT DISTINCT "${args.column}" FROM "${args.schema}"."${args.table}" LIMIT $1`,
       [args.limit ?? 5]
     );
-    return { content: [{ type: "text", text: JSON.stringify({ values: res.rows.map(row => row[args.column]) }) }] };
+    const result = { values: res.rows.map(row => row[args.column]) };
+    return { 
+      content: [{ 
+        type: "text", 
+        text: JSON.stringify(result)
+      }],
+      structuredContent: result
+    };
   } finally {
     client.release();
   }

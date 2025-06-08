@@ -12,7 +12,16 @@ export const pool = new Pool({
   database: config.pgDatabase,
   ssl: config.pgSsl ? {
     rejectUnauthorized: config.pgSslRejectUnauthorized
-  } : undefined
+  } : false
+});
+
+// Log pool configuration for debugging
+console.log('Pool Configuration:', {
+  host: pool.options.host,
+  port: pool.options.port,
+  database: pool.options.database,
+  user: pool.options.user,
+  ssl: pool.options.ssl
 });
 
 /**

@@ -62,7 +62,13 @@ const findRelatedTablesHandler: ToolCallback<{ schema: z.ZodString; table: z.Zod
         pk_column: row.pk_column,
       })),
     ];
-    return { content: [{ type: "text", text: JSON.stringify({ related_tables: related }) }] };
+    return { 
+      content: [{ 
+        type: "text", 
+        text: JSON.stringify({ related_tables: related })
+      }],
+      structuredContent: { related_tables: related }
+    };
   } finally {
     client.release();
   }
@@ -86,33 +92,39 @@ const describeRelationshipHandler: ToolCallback<{ schema: z.ZodString; table1: z
         )
     `, [args.schema, args.table1, args.table2]);
     if (fkRes.rowCount === 0) {
+      const result = {
+        explanation: `There is no direct foreign key relationship between "${args.table1}" and "${args.table2}" in schema "${args.schema}".`
+      };
       return {
         content: [{
           type: "text",
-          text: JSON.stringify({
-            explanation: `There is no direct foreign key relationship between "${args.table1}" and "${args.table2}" in schema "${args.schema}".`
-          })
-        }]
+          text: JSON.stringify(result)
+        }],
+        structuredContent: result
       };
     }
     const rel = fkRes.rows[0];
     if (rel.constraint_type === "FOREIGN KEY") {
+      const result = {
+        explanation: `Table "${args.table1}" is related to "${args.table2}" via foreign key: "${rel.fk_column}" references "${rel.pk_column}".`
+      };
       return {
         content: [{
           type: "text",
-          text: JSON.stringify({
-            explanation: `Table "${args.table1}" is related to "${args.table2}" via foreign key: "${rel.fk_column}" references "${rel.pk_column}".`
-          })
-        }]
+          text: JSON.stringify(result)
+        }],
+        structuredContent: result
       };
     }
+    const result = {
+      explanation: "Relationship found but type could not be determined."
+    };
     return {
       content: [{
         type: "text",
-        text: JSON.stringify({
-          explanation: "Relationship found but type could not be determined."
-        })
-      }]
+        text: JSON.stringify(result)
+      }],
+      structuredContent: result
     };
   } finally {
     client.release();

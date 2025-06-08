@@ -22,3 +22,15 @@ export const config: Config = {
   pgSsl: process.env.PGSSL === 'true',
   pgSslRejectUnauthorized: process.env.PGSSL_REJECT_UNAUTHORIZED !== 'false'
 };
+
+// Log configuration for debugging
+console.log('Database Configuration:', {
+  host: config.pgHost,
+  port: config.pgPort,
+  database: config.pgDatabase,
+  user: config.pgUser,
+  ssl: {
+    enabled: config.pgSsl,
+    rejectUnauthorized: config.pgSslRejectUnauthorized
+  }
+});

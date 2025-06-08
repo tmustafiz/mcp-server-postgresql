@@ -68,7 +68,13 @@ const generateErdMermaidHandler: ToolCallback<{ schema: z.ZodString }> = async (
       }
     }
 
-    return { content: [{ type: "text", text: JSON.stringify({ diagram: mermaid }) }] };
+    return { 
+      content: [{ 
+        type: "text", 
+        text: JSON.stringify({ diagram: mermaid })
+      }],
+      structuredContent: { diagram: mermaid }
+    };
   } finally {
     client.release();
   }
@@ -126,7 +132,13 @@ const generateErdJsonHandler: ToolCallback<{ schema: z.ZodString }> = async (arg
         });
       }
     }
-    return { content: [{ type: "text", text: JSON.stringify({ tables: tablesJson, relationships }) }] };
+    return { 
+      content: [{ 
+        type: "text", 
+        text: JSON.stringify({ tables: tablesJson, relationships })
+      }],
+      structuredContent: { tables: tablesJson, relationships }
+    };
   } finally {
     client.release();
   }

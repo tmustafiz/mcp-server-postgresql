@@ -121,5 +121,20 @@ PORT=8080
    npm start
    ```
 
+### Development Scripts
+- `npm run build` - Build the TypeScript project
+- `npm start` - Run the built server
+- `npm run dev` - Run the server in development mode using tsx
+- `npm run release:beta` - Create and publish a beta release
+- `npm run release:patch` - Create and publish a patch release
+- `npm run release:minor` - Create and publish a minor release
+- `npm run release:major` - Create and publish a major release
+
+## Dependencies
+- `@modelcontextprotocol/sdk`: ^1.12.1
+- `dotenv`: ^16.4.5
+- `pg`: ^8.12.0
+- `string-similarity`: ^4.0.4
+
 ## License
 MIT 

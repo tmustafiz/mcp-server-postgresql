@@ -52,14 +52,17 @@ const fuzzyColumnMatchHandler: ToolCallback<{ schema: z.ZodString; table: z.ZodS
       .sort((a, b) => b.similarity - a.similarity);
 
     const best = all_matches[0];
+    const result = {
+      best_match: best && best.similarity > 0.3 ? best.column : null,
+      all_matches
+    };
+    
     return {
       content: [{
         type: "text",
-        text: JSON.stringify({
-          best_match: best && best.similarity > 0.3 ? best.column : null,
-          all_matches
-        })
-      }]
+        text: JSON.stringify(result)
+      }],
+      structuredContent: result
     };
   } finally {
     client.release();
